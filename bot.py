@@ -2,6 +2,15 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import os
+import logging
+
+# Configure logging at the start
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger('inmidradio')
 
 
 class RadioBot(commands.Bot):
@@ -15,13 +24,13 @@ class RadioBot(commands.Bot):
         # Load and sort tracks alphabetically
         self.playlist = sorted(
             [f for f in os.listdir('./music') if f.endswith('.mp3')])
-        print(f"Found {len(self.playlist)} songs")
+        logger.info(f"Found {len(self.playlist)} songs")
 
         try:
             synced = await self.tree.sync()
-            print(f"Synced {len(synced)} commands")
+            logger.info(f"Synced {len(synced)} commands")
         except Exception as e:
-            print(f"Error syncing commands: {e}")
+            logger.error(f"Error syncing commands: {e}")
 
     async def play_next(self, voice_client):
         if not voice_client.is_connected():
@@ -34,7 +43,7 @@ class RadioBot(commands.Bot):
 
             def after_playing(error):
                 if error:
-                    print(f"Error playing audio: {error}")
+                    logger.error(f"Error playing audio: {error}")
                 else:
                     # Move to next track, loop back to start if at end
                     self.current_track = (
@@ -43,7 +52,7 @@ class RadioBot(commands.Bot):
                     self.loop.create_task(self.play_next(voice_client))
 
             voice_client.play(audio, after=after_playing)
-            print(f"Now playing: {self.playlist[self.current_track]}")
+            logger.info(f"Now playing: {self.playlist[self.current_track]}")
 
 
 bot = RadioBot()
@@ -51,7 +60,7 @@ bot = RadioBot()
 
 @bot.event
 async def on_ready():
-    print(f'Bot is ready! Logged in as {bot.user}')
+    logger.info(f'Bot is ready! Logged in as {bot.user}')
 
 
 @bot.tree.command(name="play", description="Start playing music")
@@ -68,7 +77,7 @@ async def play(interaction: discord.Interaction):
         await interaction.response.send_message("Starting playlist! 🎵")
         await bot.play_next(voice_client)
     except Exception as e:
-        print(f"Error connecting to voice: {e}")
+        logger.error(f"Error connecting to voice: {e}")
         await interaction.response.send_message("Error starting playback!")
 
 
