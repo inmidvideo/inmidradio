@@ -11,5 +11,4 @@ RUN pip install -r requirements.txt
 COPY bot.py .
 RUN mkdir music
 
-# CMD ["python", "bot.py"]
-CMD ["tail", "-f", "/dev/null"]
+CMD ["python", "bot.py"]
