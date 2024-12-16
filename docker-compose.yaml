@@ -1,0 +1,8 @@
+services:
+  bot:
+    build: .
+    volumes:
+      - ./music:/app/music
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    restart: unless-stopped
