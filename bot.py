@@ -38,16 +38,33 @@ class RadioBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
         self.current_track = 0
         self.mode = None  # "music", "atc", or None
+        self._synced_guilds = False
 
     async def setup_hook(self):
         self.playlist = load_playlist("./music")
         logger.info(f"Found {len(self.playlist)} songs")
 
+        # Global sync so commands exist everywhere. Global commands can take up
+        # to ~1 hour to appear; per-guild syncing (below) makes them instant.
         try:
             synced = await self.tree.sync()
-            logger.info(f"Synced {len(synced)} commands")
+            logger.info(f"Synced {len(synced)} global commands")
         except Exception as e:
             logger.error(f"Error syncing commands: {e}")
+
+    async def sync_guild(self, guild):
+        """Copy global commands into a guild and sync for instant availability.
+
+        Guild-scoped commands register immediately (no ~1h global propagation).
+        A guild command shadows the same-named global one, so users see no
+        duplicates.
+        """
+        try:
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
+            logger.info(f"Synced commands to guild {guild.id}")
+        except Exception as e:
+            logger.error(f"Error syncing to guild {guild.id}: {e}")
 
     async def play_next(self, voice_client):
         if self.mode != "music" or not voice_client.is_connected():
@@ -94,6 +111,19 @@ bot = RadioBot()
 @bot.event
 async def on_ready():
     logger.info(f"Bot is ready! Logged in as {bot.user}")
+    # bot.guilds is only populated once connected, so sync here (not in
+    # setup_hook). Guard against re-running on reconnects.
+    if not bot._synced_guilds:
+        for guild in bot.guilds:
+            await bot.sync_guild(guild)
+        bot._synced_guilds = True
+
+
+@bot.event
+async def on_guild_join(guild):
+    # Newly joined guilds get commands instantly instead of waiting on the
+    # global propagation delay.
+    await bot.sync_guild(guild)
 
 
 @bot.tree.command(name="play", description="Start playing music")
