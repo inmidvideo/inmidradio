@@ -12,3 +12,18 @@ A Discord bot that streams mp3s in the `music` folder to a voice channel.
 6. Join a voice channel, then use `/play`, `/next`, or `/stop` in any text channel
 7. `docker compose logs -f bot` to view logs
 8. `docker compose down` to stop
+
+## Local development
+
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
+You'll also need [ffmpeg](https://ffmpeg.org/) on your `PATH`.
+
+```bash
+uv sync                          # create the venv and install deps
+uv run ruff check .              # lint
+uv run ruff format .             # format
+uv run pytest                    # run tests
+DISCORD_TOKEN=... uv run bot.py  # run the bot locally
+```
+
+CI runs the lint, format, and test steps on every push and pull request.
