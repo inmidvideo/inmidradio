@@ -12,7 +12,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project
 
-COPY bot.py playlist.py ./
+COPY bot.py playlist.py atc.py ./
 RUN mkdir -p music
 
 CMD ["uv", "run", "--no-sync", "python", "bot.py"]

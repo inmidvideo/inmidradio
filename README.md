@@ -1,6 +1,27 @@
 # inmidradio
 
-A Discord bot that streams mp3s in the `music` folder to a voice channel.
+A Discord bot that streams mp3s in the `music` folder to a voice channel, and
+can also play live air-traffic control audio from [LiveATC.net](https://www.liveatc.net/).
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `/play` | Start playing the `music` playlist |
+| `/next` | Skip to the next track |
+| `/atc <feed>` | Play a live LiveATC feed (e.g. `/atc kord1s1_atis`) |
+| `/stop` | Stop music or ATC audio and disconnect |
+
+### Finding an ATC feed ID
+
+LiveATC feed IDs aren't derivable from an airport code — an airport has many
+feeds (tower, ground, approach, ATIS, …) with IDs like `kord1s1_atis`. Look up
+the exact ID on the airport's LiveATC page, e.g.
+<https://www.liveatc.net/search/?icao=kord>, then pass it to `/atc`. A bare
+`/atc <icao>` also works for the occasional single-feed airport.
+
+> Note: LiveATC's Terms of Use restrict re-use of their audio streams. This
+> command is intended for private, personal use only.
 
 ## Getting Started
 
